@@ -6,6 +6,18 @@
 This document records the research findings and the proposed design. It is a **living
 document**: it will be updated as the design is refined and implemented.
 
+## Status
+
+**Implemented.** A thin `wasm-bindgen` wrapper crate (`crates/prpr-auto-offset-wasm`) builds for
+`wasm32-unknown-unknown`, and a TypeScript npm facade (`npm/`) compiles and passes a Node smoke
+test that recovers a synthetic offset. See README for usage and build instructions.
+
+Key technical decisions (all confirmed):
+- Dependency on upstream is a **git dependency** (not a fork, not vendored).
+- `rayon` is left as upstream provides it; it compiles for wasm and degrades to sequential.
+- Configs cross the WASM boundary as camelCase JSON objects (via `serde-wasm-bindgen`).
+- `wasm-opt` is disabled in `wasm-pack` (local binaryen too old for modern wasm features).
+
 ---
 
 ## 1. What the project is
