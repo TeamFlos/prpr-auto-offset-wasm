@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build:
+    name: Build & test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Rust toolchain (wasm32 target)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@v2
+
+      - name: Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install wasm-pack
+        uses: jetli/wasm-pack-action@v0.4.0
+        with:
+          version: "latest"
+
+      - name: Rust tests (native)
+        run: cargo test -p prpr-auto-offset-wasm
+
+      - name: Build wasm (bundler) → npm/pkg
+        working-directory: crates/prpr-auto-offset-wasm
+        run: wasm-pack build --target bundler --out-dir ../../npm/pkg
+
+      - name: Build wasm (web) → npm/pkg-web
+        working-directory: crates/prpr-auto-offset-wasm
+        run: wasm-pack build --target web --out-dir ../../npm/pkg-web
+
+      - name: Build wasm (nodejs) → tests/pkg-node
+        working-directory: crates/prpr-auto-offset-wasm
+        run: wasm-pack build --target nodejs --out-dir ../../tests/pkg-node
+
+      - name: TypeScript facade build
+        working-directory: npm
+        run: npm install --no-audit --no-fund && npm run build
+
+      - name: Node smoke test
+        run: node tests/node-smoke.mjs

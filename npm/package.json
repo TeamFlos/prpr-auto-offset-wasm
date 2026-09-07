@@ -12,11 +12,17 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./web": {
+      "types": "./pkg-web/prpr_auto_offset_wasm.d.ts",
+      "import": "./pkg-web/prpr_auto_offset_wasm.js",
+      "default": "./pkg-web/prpr_auto_offset_wasm.js"
     }
   },
   "files": [
     "dist",
-    "pkg"
+    "pkg",
+    "pkg-web"
   ],
   "sideEffects": [
     "./pkg/**"

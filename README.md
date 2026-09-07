@@ -64,6 +64,30 @@ const res = estimateAutoOffset({
 The `offset` is in **absolute time**. To get the chart correction, subtract `searchCenterSec`
 (the chart author's offset, when set).
 
+### No-bundler / CDN use
+
+When you can't run a bundler (raw `<script type="module">`, CDN), use the `./web` entry, which
+exports the same API plus an async `init` you must call first:
+
+```js
+import init, { estimate_auto_offset } from "@teamflos/prpr-auto-offset-wasm/web";
+await init();
+const res = estimate_auto_offset(options);
+```
+
+### Low-level signal API
+
+Build frontends individually and combine them:
+
+```ts
+import { superflux, weightedGaussianNote, estimateWith } from "@teamflos/prpr-auto-offset-wasm";
+
+const audio = superflux(pcm, 44100);                          // or spectralFlux / energyDiff
+const note  = weightedGaussianNote(notes, 0.02, noteConfig);   // or gaussianNote
+const res   = estimateWith(audio, note, durationSec, { searchCenterSec: authorOffset });
+const vals  = audio.sample(new Float64Array([1.0, 1.5, 2.0])); // sample at arbitrary times
+```
+
 ---
 
 ## Building
