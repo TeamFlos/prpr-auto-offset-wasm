@@ -39,14 +39,14 @@ Note frontends: `GaussianNote` (diagnostic) and **`WeightedGaussianNote`** (reco
 ## npm usage
 
 ```ts
-import { estimateAutoOffset, NoteKind } from "@teamflos/prpr-auto-offset-wasm";
+import { estimateAutoOffset } from "@teamflos/prpr-auto-offset-wasm";
 
 const res = estimateAutoOffset({
   pcm: audioPcm,            // Float32Array, mono
   sampleRate: 44100,
   notes: [
-    { time: 1.0, kind: NoteKind.Tap },
-    { time: 1.25, kind: NoteKind.Flick },
+    { time: 1.0, kind: "tap" },
+    { time: 1.25, kind: "flick" },
   ],
 });
 
