@@ -53,8 +53,22 @@ const res = estimateAutoOffset({
 // res: { offset, correlation, rawPeak, noteEnergy, audioEnergy, reliable, correlationCurve }
 ```
 
-The `offset` is in **absolute time**. To get the chart correction, subtract `searchCenterSec`
-(the chart author's offset, when set).
+> [!IMPORTANT]
+> **`offset` is absolute time, not a chart offset.** To get the value you should set on the
+> chart, **subtract `searchCenterSec`** — i.e. the chart author's configured offset when it is
+> set, otherwise `0`:
+>
+> ```
+> chartOffset = offset − searchCenterSec
+> ```
+>
+> Example: if the chart author set `offset = 0.05s` and you pass `searchCenterSec = 0.05`,
+> a detected `offset = 0.112s` means the chart needs a **`+62ms`** correction.
+
+> [!NOTE]
+> `correlation` is in `[0, 1]`; values near `0` mean the note pattern has no discernible match
+> in the audio and the detected `offset` may be unreliable. `reliable` is `true` when
+> `correlation` exceeds the internal threshold (`0.2`).
 
 ### No-bundler / CDN use
 

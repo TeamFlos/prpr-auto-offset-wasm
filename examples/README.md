@@ -7,7 +7,16 @@ builder、无打包器入口与可视化。所有示例都基于同一个前提�
 - `sampleRate`：采样率（Hz）。
 - `notes`：谱面音符数组，`{ time, kind }`，`kind ∈ "tap" | "hold" | "flick" | "drag"`。
 
-> `offset` 是**绝对时间**。要得到谱面里该填的偏移修正值：`chartOffset = offset - searchCenterSec`。
+> [!IMPORTANT]
+> **`offset` 是绝对时间，不是谱面偏移。** 要得到谱面里该填的修正值，必须**减去
+> `searchCenterSec`**（谱面作者的偏移，未设置时当作 `0`）：
+>
+> ```
+> chartOffset = offset − searchCenterSec
+> ```
+>
+> 例：作者偏移为 `0.05s`，你传 `searchCenterSec = 0.05`，若检测到 `offset = 0.112s`，
+> 则谱面需要 **`+62ms`** 的修正。
 
 ---
 
