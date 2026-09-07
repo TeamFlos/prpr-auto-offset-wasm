@@ -1,0 +1,6 @@
+_things/
+*.local
+node_modules/
+target/
+pkg/
+dist/
