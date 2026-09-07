@@ -8,19 +8,11 @@ between when notes are placed and when the corresponding hit sounds actually pla
 entirely in the browser via WebAssembly.
 
 - **Rust crate**: `crates/prpr-auto-offset-wasm` — a thin `wasm-bindgen` wrapper over the
-  upstream crate (a **git dependency**, no vendored copy).
+  upstream crate.
 - **npm package**: `@teamflos/prpr-auto-offset-wasm` — an ergonomic, validated TypeScript
   facade.
 
 ---
-
-## Why a git dependency?
-
-`prpr-auto-offset` is a path member of the phira workspace and is **not published to
-crates.io**. It is also `GPL-3.0-only`. This crate depends on it directly with a git
-dependency, so it always tracks the canonical implementation. Its `rayon` dependency
-compiles for `wasm32-unknown-unknown` and degrades to sequential execution there, so no
-fork or feature-gating is needed.
 
 ## How it works
 
@@ -114,9 +106,8 @@ make build
 
 ### Note on wasm-opt
 
-The repository intentionally sets `wasm-opt = false` in the crate's `[package.metadata.wasm-pack]`
-because the locally bundled binaryen is older than the wasm features (bulk-memory /
-nontrapping-fptoi) emitted by modern rustc. To optimize the shipped `.wasm`, run:
+`wasm-opt` is disabled in the crate's `wasm-pack` metadata. To optimize the shipped `.wasm`,
+run:
 
 ```sh
 wasm-opt --enable-bulk-memory --enable-nontrapping-float-to-int -O \
@@ -124,18 +115,6 @@ wasm-opt --enable-bulk-memory --enable-nontrapping-float-to-int -O \
 ```
 
 ---
-
-## Project layout
-
-```
-.
-├── Cargo.toml                       # workspace
-├── crates/prpr-auto-offset-wasm/    # the wasm crate (git-dep on prpr-auto-offset)
-├── npm/                             # the npm package (facade + generated pkg)
-├── tests/                           # node smoke test + nodejs-target build
-├── _things/                         # git-ignored research scratch
-└── DESIGN.md                        # design & research notes
-```
 
 ## License
 
