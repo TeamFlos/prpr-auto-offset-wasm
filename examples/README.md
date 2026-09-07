@@ -173,8 +173,10 @@ const note: NoteEvent = { time: 1.0, kind: "tap" };       // kind: "tap"|"hold"|
 ```ts
 const res = estimateAutoOffset({ pcm, sampleRate: 44100, notes, config: { searchCenterSec: authorOffset } });
 const chartOffsetMs = (res.offset - authorOffset) * 1000;  // 谱面里要保存的毫秒偏移
-if (!res.reliable) {
-  console.warn("低置信度（correlation 过低），结果仅供参考或需要更多音符/更干净音频。");
+if (res.correlation < 0.35) {
+  console.warn("质量差（correlation<0.35，约千分之六的谱面才低于此），结果仅供参考或需要更干净音频。");
+} else if (res.correlation >= 0.6) {
+  console.log("通常水平（0.6–0.75 是大多数谱面落点）。");
 }
 ```
 

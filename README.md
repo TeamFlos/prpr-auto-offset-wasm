@@ -66,9 +66,15 @@ const res = estimateAutoOffset({
 > a detected `offset = 0.112s` means the chart needs a **`+62ms`** correction.
 
 > [!NOTE]
-> `correlation` is in `[0, 1]`; values near `0` mean the note pattern has no discernible match
-> in the audio and the detected `offset` may be unreliable. `reliable` is `true` when
-> `correlation` exceeds the internal threshold (`0.2`).
+> **`reliable` is only the algorithm's internal gate — `correlation > 0.2`** — a bare lower
+> bound that real charts easily exceed. It is **not** a quality scale. To judge quality, use the
+> reference bands that the Phira offset panel draws on the correlation curve:
+>
+> - **`0.35` — poor / lower bound**: below this the note pattern has essentially no usable
+>   match (in a 2000-chart sample only ~6 per 1000 scored below it).
+> - **`0.6`–`0.75` — typical / usual**: the range where most charts land.
+>
+> Treat `reliable` as a minimal sanity check, and interpret quality with the bands above.
 
 ### No-bundler / CDN use
 
