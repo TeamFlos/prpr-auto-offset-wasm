@@ -1,6 +1,18 @@
+# research scratch
 _things/
+
+# local env files
 *.local
-node_modules/
+
+# rust
 target/
-pkg/
-dist/
+Cargo.lock.bak
+
+# npm
+node_modules/
+npm/dist/
+npm/pkg/
+npm/pkg-web/
+
+# wasm-pack nodejs test build (writes its own `*` .gitignore but keep the dir out)
+tests/pkg-node/

@@ -1,0 +1,48 @@
+{
+  "name": "@teamflos/prpr-auto-offset-wasm",
+  "version": "0.1.0",
+  "description": "WebAssembly bindings for Phira's prpr-auto-offset delay-alignment library",
+  "license": "GPL-3.0-only",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "pkg"
+  ],
+  "sideEffects": [
+    "./pkg/**"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TeamFlos/prpr-auto-offset-wasm"
+  },
+  "keywords": [
+    "wasm",
+    "webassembly",
+    "phira",
+    "rhythm-game",
+    "offset",
+    "audio",
+    "alignment",
+    "onset-detection"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "build:wasm": "cd ../crates/prpr-auto-offset-wasm && wasm-pack build --target bundler --out-dir ../../npm/pkg",
+    "build:wasm:web": "cd ../crates/prpr-auto-offset-wasm && wasm-pack build --target web --out-dir ../../npm/pkg-web",
+    "prepack": "npm run build",
+    "test:node": "node ../tests/node-smoke.mjs"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  }
+}
