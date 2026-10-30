@@ -1,4 +1,4 @@
-.PHONY: all build wasm wasm-web npm node test clean
+.PHONY: all build wasm wasm-web npm node test demo clean
 
 CRATE := crates/prpr-auto-offset-wasm
 NPM := npm
@@ -7,7 +7,7 @@ NODE_PKG := tests/pkg-node
 all: build
 
 # Build the wasm (bundler target) into npm/pkg, then compile the TS facade.
-build: wasm npm
+build: wasm wasm-web npm
 
 # wasm-pack bundler-target build → npm/pkg
 wasm:
@@ -28,6 +28,9 @@ node:
 
 # Build nodejs-target wasm and run the smoke test
 test: node
+
+demo: wasm-web
+	node scripts/build-demo.mjs
 
 # Free build artifacts (leaves source + gitignored scratch)
 clean:

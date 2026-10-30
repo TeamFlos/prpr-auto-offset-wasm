@@ -16,3 +16,7 @@ npm/pkg-web/
 
 # wasm-pack nodejs test build (writes its own `*` .gitignore but keep the dir out)
 tests/pkg-node/
+site/
+npm/README.md
+npm/LICENSE
+*.tgz

@@ -127,7 +127,7 @@ const res = new AutoOffsetPipeline()
 
 ## 6. 无打包器 / CDN 入口（`./web`）
 
-`./web` 导出与主入口相同的函数，但需先 `await init()`；其中 `estimate_auto_offset` 接受
+`./web` 导出原始 wasm-bindgen API（不是主入口的 TypeScript facade），需先 `await init()`；其中 `estimate_auto_offset` 接受
 camelCase 对象，`kind` 用数字：`0=tap, 1=hold, 2=flick, 3=drag`。
 
 ```js

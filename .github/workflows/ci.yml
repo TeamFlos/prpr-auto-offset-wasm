@@ -24,15 +24,15 @@ jobs:
       - name: Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Install wasm-pack
         uses: jetli/wasm-pack-action@v0.4.0
         with:
-          version: "latest"
+          version: "v0.15.1"
 
       - name: Rust tests (native)
-        run: cargo test -p prpr-auto-offset-wasm
+        run: cargo test --locked -p prpr-auto-offset-wasm
 
       - name: Build wasm (bundler) → npm/pkg
         working-directory: crates/prpr-auto-offset-wasm
@@ -48,7 +48,21 @@ jobs:
 
       - name: TypeScript facade build
         working-directory: npm
-        run: npm install --no-audit --no-fund && npm run build
+        run: npm ci --no-audit --no-fund && npm run build
 
       - name: Node smoke test
         run: node tests/node-smoke.mjs
+
+      - name: Demo input and browser entry smoke tests
+        run: node --test tests/demo-input.test.mjs && node tests/web-smoke.mjs
+
+      - name: Build demo artifact
+        run: node scripts/build-demo.mjs
+
+      - name: Browser smoke test
+        working-directory: npm
+        run: npx playwright install --with-deps chromium && npm run test:browser
+
+      - name: Verify npm package
+        working-directory: npm
+        run: npm pack --dry-run

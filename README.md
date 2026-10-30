@@ -12,6 +12,30 @@ entirely in the browser via WebAssembly.
 - **npm package**: `@teamflos/prpr-auto-offset-wasm` — an ergonomic, validated TypeScript
   facade.
 
+## Browser demo
+
+[Open the demo](https://teamflos.github.io/prpr-auto-offset-wasm/). It runs a synthetic
+sample with a known +123 ms offset, or accepts a local audio file and a JSON array of
+`{ "time": 1.0, "kind": "tap" }` notes (seconds). It shows the absolute offset, correction
+relative to the search center, and correlation curve. Audio stays in your browser;
+analysis runs in a Web Worker. Full chart formats are not parsed.
+
+To preview locally, run `make demo`, then serve `site/` over HTTP (for example,
+`python -m http.server 8080 --directory site`). Without Make:
+
+```sh
+cd npm
+npm ci
+npm run build:wasm:web
+cd ..
+node scripts/build-demo.mjs
+python -m http.server 8080 --directory site
+```
+
+For GitHub Pages, set **Settings → Pages → Build and deployment → Source → GitHub Actions**.
+The Pages workflow builds from source and deploys on pushes to `main` or manual dispatch.
+All asset URLs are relative, including the worker and WASM, so repository subpaths work.
+
 ---
 
 ## How it works
@@ -79,12 +103,21 @@ const res = estimateAutoOffset({
 ### No-bundler / CDN use
 
 When you can't run a bundler (raw `<script type="module">`, CDN), use the `./web` entry, which
-exports the same API plus an async `init` you must call first:
+exports the **raw wasm-bindgen API**, plus an async `init` you must call first.
+Unlike the main TypeScript entry, it uses numeric enum codes, `noteEvents`, and
+`alignConfig`; results expose `curve_offsets()` / `curve_values()` and must be freed:
 
 ```js
 import init, { estimate_auto_offset } from "@teamflos/prpr-auto-offset-wasm/web";
 await init();
-const res = estimate_auto_offset(options);
+const res = estimate_auto_offset({
+  pcm: audioPcm, sampleRate: 44100,
+  noteEvents: [{ time: 1, kind: 0 }], // 0=tap, 1=hold, 2=flick, 3=drag
+  frontend: 2, noteMethod: 1,        // SuperFlux + weighted Gaussian
+  alignConfig: { searchCenterSec: 0, searchRangeSec: 0.3, samplingIntervalSec: 0.005 },
+});
+try { console.log(res.offset, res.correlation); }
+finally { res.free(); }
 ```
 
 ### Low-level signal API
@@ -108,6 +141,9 @@ Prerequisites: Rust (with `wasm32-unknown-unknown`), [`wasm-pack`](https://rustw
 Node.js, and `npm`/`pnpm`.
 
 ```sh
+# install the TypeScript build dependency first
+cd npm && npm ci && cd ..
+
 # wasm (bundler target) → npm/pkg
 make wasm
 
@@ -123,6 +159,28 @@ Run everything end-to-end:
 ```sh
 make build
 ```
+
+### npm release checklist
+
+From `npm/`, run:
+
+```sh
+npm ci
+npm pack --dry-run  # rebuilds bundler + web WASM, compiles TS, checks package contents
+npm publish --access public
+```
+
+`prepack` requires Rust, the wasm32 target, and wasm-pack. It copies the repository README
+and GPL license into the package and rejects missing JS, declarations, or WASM binaries.
+The package is not published by CI. Before a release, also run `make test`,
+`node --test tests/demo-input.test.mjs`, and `node tests/web-smoke.mjs` from the repo root
+(after building the web target). The main entry is for WASM-capable bundlers; use `/web`
+for native browser modules. The version is currently `0.1.0`; keep the npm and Cargo
+workspace versions aligned when bumping it.
+
+For the real browser smoke test, build `site/` first, then run `npx playwright install chromium`
+and `npm run test:browser` from `npm/`. It checks Worker/WASM loading under a repository
+subpath, both offset formulas, invalid JSON, stereo WAV upload/decoding, and mobile width.
 
 ### Note on wasm-opt
 
