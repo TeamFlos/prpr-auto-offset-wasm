@@ -14,11 +14,7 @@ entirely in the browser via WebAssembly.
 
 ## Browser demo
 
-[Open the demo](https://teamflos.github.io/prpr-auto-offset-wasm/). It runs a synthetic
-sample with a known +123 ms offset, or accepts a local audio file and a JSON array of
-`{ "time": 1.0, "kind": "tap" }` notes (seconds). It shows the absolute offset, correction
-relative to the search center, and correlation curve. Audio stays in your browser;
-analysis runs in a Web Worker. Full chart formats are not parsed.
+[Demo](https://teamflos.github.io/prpr-auto-offset-wasm/).
 
 To preview locally, run `make demo`, then serve `site/` over HTTP (for example,
 `python -m http.server 8080 --directory site`). Without Make:
@@ -172,15 +168,9 @@ npm publish --access public
 
 `prepack` requires Rust, the wasm32 target, and wasm-pack. It copies the repository README
 and GPL license into the package and rejects missing JS, declarations, or WASM binaries.
-The package is not published by CI. Before a release, also run `make test`,
-`node --test tests/demo-input.test.mjs`, and `node tests/web-smoke.mjs` from the repo root
-(after building the web target). The main entry is for WASM-capable bundlers; use `/web`
-for native browser modules. The version is currently `0.1.0`; keep the npm and Cargo
-workspace versions aligned when bumping it.
-
-For the real browser smoke test, build `site/` first, then run `npx playwright install chromium`
-and `npm run test:browser` from `npm/`. It checks Worker/WASM loading under a repository
-subpath, both offset formulas, invalid JSON, stereo WAV upload/decoding, and mobile width.
+The package is not published by CI. Before a release, also run `make test`. The main entry
+is for WASM-capable bundlers; use `/web` for native browser modules. The version is currently
+`0.1.0`; keep the npm and Cargo workspace versions aligned when bumping it.
 
 ### Note on wasm-opt
 

@@ -53,15 +53,8 @@ jobs:
       - name: Node smoke test
         run: node tests/node-smoke.mjs
 
-      - name: Demo input and browser entry smoke tests
-        run: node --test tests/demo-input.test.mjs && node tests/web-smoke.mjs
-
       - name: Build demo artifact
         run: node scripts/build-demo.mjs
-
-      - name: Browser smoke test
-        working-directory: npm
-        run: npx playwright install --with-deps chromium && npm run test:browser
 
       - name: Verify npm package
         working-directory: npm

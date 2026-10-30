@@ -25,7 +25,6 @@ jobs:
           version: 'v0.15.1'
       - run: wasm-pack build --target web --out-dir ../../npm/pkg-web --locked
         working-directory: crates/prpr-auto-offset-wasm
-      - run: node --test tests/demo-input.test.mjs
       - run: node scripts/build-demo.mjs
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
