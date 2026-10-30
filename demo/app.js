@@ -1,12 +1,12 @@
-import { createSample, parseNotes } from './input.js';
-import { parsePez } from './chart/index.js';
+import { createSample, parseNotes } from "./input.js";
+import { parsePez } from "./chart/index.js";
 
 const $ = (id) => document.getElementById(id);
-const canvas = $('curve');
-const ctx = canvas.getContext('2d');
-const stage = $('stage');
-const tooltip = $('tooltip');
-const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const canvas = $("curve");
+const ctx = canvas.getContext("2d");
+const stage = $("stage");
+const tooltip = $("tooltip");
+const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 const PLOT = { left: 46, right: 18, top: 28, bottom: 32 };
 const SCORE_LINES = [0.35, 0.6, 0.75];
@@ -14,7 +14,7 @@ const SCORE_LINES = [0.35, 0.6, 0.75];
 const state = {
   ready: false,
   busy: false,
-  kind: 'audio', // chart | audio
+  kind: "audio", // chart | audio
   audio: null,
   meta: null,
   result: null,
@@ -30,36 +30,43 @@ let worker;
 let pending = null;
 let requestSeq = 0;
 let readyResolve;
-const readyPromise = new Promise((resolve) => { readyResolve = resolve; });
+const readyPromise = new Promise((resolve) => {
+  readyResolve = resolve;
+});
 
 // ─── theme ──────────────────────────────────────────────────────────────────
 
 function setTheme(theme) {
   document.documentElement.dataset.theme = theme;
-  const dark = theme === 'dark';
-  const label = dark ? '切换到浅色模式' : '切换到暗色模式';
-  $('theme').setAttribute('aria-label', label);
-  $('theme').title = label;
-  $('theme').setAttribute('aria-pressed', String(dark));
-  try { localStorage.setItem('demo-theme', theme); } catch {}
+  const dark = theme === "dark";
+  const label = dark ? "切换到浅色模式" : "切换到暗色模式";
+  $("theme").setAttribute("aria-label", label);
+  $("theme").title = label;
+  $("theme").setAttribute("aria-pressed", String(dark));
+  try {
+    localStorage.setItem("demo-theme", theme);
+  } catch {}
   if (state.result) resizeAndDraw(false);
 }
 
-let initialTheme = 'dark';
-try { if (localStorage.getItem('demo-theme') === 'light') initialTheme = 'light'; } catch {}
+let initialTheme = "dark";
+try {
+  if (localStorage.getItem("demo-theme") === "light") initialTheme = "light";
+} catch {}
 setTheme(initialTheme);
-$('theme').onclick = () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
+$("theme").onclick = () =>
+  setTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
 
 // ─── typewriter ─────────────────────────────────────────────────────────────
 
 function startTypewriter() {
-  const typed = $('typed');
+  const typed = $("typed");
   if (!typed) return;
   if (reducedMotion) {
-    typed.textContent = '.PEZ';
+    typed.textContent = ".PEZ";
     return;
   }
-  const words = ['.PEZ', '.ZIP'];
+  const words = [".PEZ", ".ZIP"];
   let word = 0;
   let char = words[0].length;
   let deleting = true;
@@ -91,18 +98,18 @@ function startTypewriter() {
 
 // ─── status & controls ──────────────────────────────────────────────────────
 
-function setStatus(text, kind = '') {
-  $('status').textContent = text;
-  $('status').dataset.kind = kind;
-  $('status').parentElement.hidden = !text;
+function setStatus(text, kind = "") {
+  $("status").textContent = text;
+  $("status").dataset.kind = kind;
+  $("status").parentElement.hidden = !text;
 }
 
 function updateControls() {
   const blocked = state.busy || !state.ready;
-  $('run').disabled = blocked;
-  $('swap').disabled = state.busy;
-  $('pez').disabled = state.busy;
-  $('audio').disabled = state.busy;
+  $("run").disabled = blocked;
+  $("swap").disabled = state.busy;
+  $("pez").disabled = state.busy;
+  $("audio").disabled = state.busy;
 }
 
 function setBusy(busy) {
@@ -111,37 +118,37 @@ function setBusy(busy) {
 }
 
 function setLoading(loading) {
-  $('loading').hidden = !loading;
+  $("loading").hidden = !loading;
 }
 
 function formatSigned(ms) {
-  return `${ms >= 0 ? '+' : ''}${ms.toFixed(1)}`;
+  return `${ms >= 0 ? "+" : ""}${ms.toFixed(1)}`;
 }
 
 function qualityBand(score) {
-  if (score < 0.35) return 'low';
-  if (score < 0.6) return 'mid';
-  if (score < 0.75) return 'good';
-  return 'high';
+  if (score < 0.35) return "low";
+  if (score < 0.6) return "mid";
+  if (score < 0.75) return "good";
+  return "high";
 }
 
 // ─── worker ─────────────────────────────────────────────────────────────────
 
 try {
-  worker = new Worker(new URL('./worker.js', import.meta.url), { type: 'module' });
+  worker = new Worker(new URL("./worker.js", import.meta.url), { type: "module" });
   worker.onerror = () => {
-    setStatus('WebAssembly 加载失败。', 'error');
+    setStatus("WebAssembly 加载失败。", "error");
     readyResolve();
   };
   worker.onmessage = ({ data }) => {
-    if (data.type === 'ready') {
+    if (data.type === "ready") {
       state.ready = true;
       readyResolve();
       updateControls();
-      setStatus('');
+      setStatus("");
       return;
     }
-    if (data.type === 'result') {
+    if (data.type === "result") {
       if (pending && data.id === pending.id) {
         const request = pending;
         pending = null;
@@ -154,12 +161,12 @@ try {
       pending = null;
       request.reject(new Error(data.error));
     } else if (data.id == null) {
-      setStatus(data.error, 'error');
+      setStatus(data.error, "error");
       readyResolve();
     }
   };
 } catch (error) {
-  setStatus(String(error), 'error');
+  setStatus(String(error), "error");
   readyResolve();
 }
 
@@ -173,12 +180,12 @@ function analyze(payload) {
 }
 
 async function decodeAudio(blob) {
-  if (!blob) throw new Error('没有音频。');
-  if (blob.size > 100 * 1024 * 1024) throw new Error('音频请小于 100 MB。');
+  if (!blob) throw new Error("没有音频。");
+  if (blob.size > 100 * 1024 * 1024) throw new Error("音频请小于 100 MB。");
   const context = new AudioContext({ sampleRate: 44100 });
   try {
     const audio = await context.decodeAudioData(await blob.arrayBuffer());
-    if (audio.duration > 600) throw new Error('音频请不超过 10 分钟。');
+    if (audio.duration > 600) throw new Error("音频请不超过 10 分钟。");
     const pcm = new Float32Array(audio.length);
     for (let channel = 0; channel < audio.numberOfChannels; channel++) {
       const data = audio.getChannelData(channel);
@@ -197,26 +204,29 @@ async function run() {
   const runId = ++state.runId;
   setBusy(true);
   setLoading(true);
-  setStatus('');
+  setStatus("");
   state.result = null;
   hideTooltip();
 
   try {
     await readyPromise;
-    if (!state.ready) throw new Error('WebAssembly 尚未就绪。');
-    if (!$('center').checkValidity() || !$('range').checkValidity()) throw new Error('请填写有效的搜索中心和半径。');
+    if (!state.ready) throw new Error("WebAssembly 尚未就绪。");
+    if (!$("center").checkValidity() || !$("range").checkValidity())
+      throw new Error("请填写有效的搜索中心和半径。");
 
-    const center = Number($('center').value) / 1000;
-    const range = Number($('range').value) / 1000;
-    if (!Number.isFinite(center) || !Number.isFinite(range) || range <= 0) throw new Error('搜索中心或半径无效。');
+    const center = Number($("center").value) / 1000;
+    const range = Number($("range").value) / 1000;
+    if (!Number.isFinite(center) || !Number.isFinite(range) || range <= 0)
+      throw new Error("搜索中心或半径无效。");
 
-    const notes = parseNotes($('notes').value);
+    const notes = parseNotes($("notes").value);
     notes.sort((a, b) => a.time - b.time);
 
-    if (!state.audio) throw new Error('没有音频。');
+    if (!state.audio) throw new Error("没有音频。");
     const { pcm, sampleRate } = await decodeAudio(state.audio);
     if (runId !== state.runId) return;
-    if (!notes.some((note) => note.time < pcm.length / sampleRate)) throw new Error('音符时间超出音频长度。');
+    if (!notes.some((note) => note.time < pcm.length / sampleRate))
+      throw new Error("音符时间超出音频长度。");
 
     const data = await analyze({
       pcm,
@@ -224,7 +234,7 @@ async function run() {
       notes,
       center,
       range,
-      frontend: Number($('frontend').value),
+      frontend: Number($("frontend").value),
     });
     if (runId !== state.runId) return;
 
@@ -232,12 +242,12 @@ async function run() {
     state.resultCenter = center;
     state.resultRange = range;
     renderResult();
-    setStatus('');
+    setStatus("");
   } catch (error) {
     if (runId !== state.runId) return;
     state.result = null;
-    $('result').hidden = true;
-    setStatus(error?.message ?? String(error), 'error');
+    $("result").hidden = true;
+    setStatus(error?.message ?? String(error), "error");
   } finally {
     if (runId === state.runId) {
       setBusy(false);
@@ -250,15 +260,20 @@ function renderResult() {
   const result = state.result;
   if (!result) return;
   const recommendedMs = result.offset * 1000;
-  $('recommended').textContent = formatSigned(recommendedMs);
-  $('final').hidden = false;
-  $('final').textContent = `当前延迟 ${formatSigned(state.resultCenter * 1000)} ms`;
-  $('score').textContent = result.correlation.toFixed(3);
-  $('score').dataset.band = qualityBand(result.correlation);
+  $("recommended").textContent = formatSigned(recommendedMs);
+  $("final").hidden = false;
+  $("final").textContent = `当前延迟 ${formatSigned(state.resultCenter * 1000)} ms`;
+  $("score").textContent = result.correlation.toFixed(3);
+  $("score").dataset.band = qualityBand(result.correlation);
   const meta = state.meta;
-  $('meta').textContent = meta ? `${meta.name}${meta.format ? ` · ${meta.format.toUpperCase()}` : ''}` : '';
-  canvas.setAttribute('aria-label', `匹配曲线：推荐延迟 ${formatSigned(recommendedMs)} 毫秒，当前延迟 ${formatSigned(state.resultCenter * 1000)} 毫秒，匹配 ${result.correlation.toFixed(3)}`);
-  $('result').hidden = false;
+  $("meta").textContent = meta
+    ? `${meta.name}${meta.format ? ` · ${meta.format.toUpperCase()}` : ""}`
+    : "";
+  canvas.setAttribute(
+    "aria-label",
+    `匹配曲线：推荐延迟 ${formatSigned(recommendedMs)} 毫秒，当前延迟 ${formatSigned(state.resultCenter * 1000)} 毫秒，匹配 ${result.correlation.toFixed(3)}`,
+  );
+  $("result").hidden = false;
   state.hoverX = null;
   state.hoverY = null;
   hideTooltip();
@@ -268,18 +283,18 @@ function renderResult() {
 // ─── loading inputs ─────────────────────────────────────────────────────────
 
 function setLoaded(loaded) {
-  document.body.classList.toggle('loaded', loaded);
-  $('hero').hidden = loaded;
-  $('swap').hidden = !loaded;
+  document.body.classList.toggle("loaded", loaded);
+  $("hero").hidden = loaded;
+  $("swap").hidden = !loaded;
   if (!loaded) {
-    $('result').hidden = true;
+    $("result").hidden = true;
     state.result = null;
   }
 }
 
 function openAdvanced() {
-  $('advanced').open = true;
-  $('advanced').scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'nearest' });
+  $("advanced").open = true;
+  $("advanced").scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "nearest" });
 }
 
 async function loadPezFile(file) {
@@ -288,40 +303,40 @@ async function loadPezFile(file) {
   state.busy = false;
   pending = null;
   setBusy(false);
-  $('result').hidden = true;
+  $("result").hidden = true;
   state.result = null;
   setLoading(true);
-  setStatus('');
+  setStatus("");
 
   try {
     const parsed = await parsePez(await file.arrayBuffer());
     const notes = parsed.notes
       .filter((note) => !note.fake)
       .map(({ time, kind }) => ({ time: +time.toFixed(4), kind }));
-    if (!notes.length) throw new Error('谱面里没有可用音符。');
+    if (!notes.length) throw new Error("谱面里没有可用音符。");
 
-    state.kind = 'chart';
+    state.kind = "chart";
     state.audio = parsed.audio ? new Blob([parsed.audio.data]) : null;
     state.meta = {
-      name: parsed.info?.name || file.name.replace(/\.(pez|zip)$/i, ''),
+      name: parsed.info?.name || file.name.replace(/\.(pez|zip)$/i, ""),
       format: parsed.format,
     };
-    $('notes').value = JSON.stringify(notes, null, 2);
-    $('center').value = String(Math.round((Number(parsed.offset) || 0) * 1000));
-    $('audio').value = '';
+    $("notes").value = JSON.stringify(notes, null, 2);
+    $("center").value = String(Math.round((Number(parsed.offset) || 0) * 1000));
+    $("audio").value = "";
     setLoaded(true);
 
     if (!state.audio) {
       setLoading(false);
-      setStatus('谱面包里没有音频，请在高级里选择音频。', 'warn');
+      setStatus("谱面包里没有音频，请在高级里选择音频。", "warn");
       openAdvanced();
       return;
     }
     await run();
   } catch (error) {
     setLoading(false);
-    $('result').hidden = true;
-    setStatus(error?.message ?? String(error), 'error');
+    $("result").hidden = true;
+    setStatus(error?.message ?? String(error), "error");
   } finally {
     setLoading(false);
   }
@@ -332,53 +347,53 @@ function resetToHero() {
   state.busy = false;
   pending = null;
   state.result = null;
-  state.kind = 'audio';
+  state.kind = "audio";
   state.audio = null;
   state.meta = null;
-  $('final').hidden = true;
-  $('final').textContent = '';
-  $('pez').value = '';
-  $('audio').value = '';
-  $('advanced').open = false;
-  $('notes').value = JSON.stringify(createSample().notes, null, 2);
-  $('center').value = '0';
-  $('range').value = '300';
+  $("final").hidden = true;
+  $("final").textContent = "";
+  $("pez").value = "";
+  $("audio").value = "";
+  $("advanced").open = false;
+  $("notes").value = JSON.stringify(createSample().notes, null, 2);
+  $("center").value = "0";
+  $("range").value = "300";
   hideTooltip();
   setLoaded(false);
   setBusy(false);
   setLoading(false);
-  setStatus('');
+  setStatus("");
 }
 
 // ─── event wiring ───────────────────────────────────────────────────────────
 
-$('swap').onclick = resetToHero;
-$('run').onclick = () => run();
+$("swap").onclick = resetToHero;
+$("run").onclick = () => run();
 
-$('pez').onchange = () => loadPezFile($('pez').files[0]);
+$("pez").onchange = () => loadPezFile($("pez").files[0]);
 
-const dropzone = $('dropzone');
-for (const type of ['dragenter', 'dragover']) {
+const dropzone = $("dropzone");
+for (const type of ["dragenter", "dragover"]) {
   dropzone.addEventListener(type, (event) => {
     event.preventDefault();
-    dropzone.classList.add('drag');
+    dropzone.classList.add("drag");
   });
 }
-dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag'));
-dropzone.addEventListener('drop', (event) => {
+dropzone.addEventListener("dragleave", () => dropzone.classList.remove("drag"));
+dropzone.addEventListener("drop", (event) => {
   event.preventDefault();
-  dropzone.classList.remove('drag');
+  dropzone.classList.remove("drag");
   const file = event.dataTransfer?.files?.[0];
   if (file) loadPezFile(file);
 });
 
-$('audio').onchange = () => {
-  const file = $('audio').files[0];
+$("audio").onchange = () => {
+  const file = $("audio").files[0];
   if (!file) return;
   state.audio = file;
-  if (state.kind !== 'chart') {
-    state.kind = 'audio';
-    state.meta = { name: file.name, format: 'audio' };
+  if (state.kind !== "chart") {
+    state.kind = "audio";
+    state.meta = { name: file.name, format: "audio" };
   }
   run();
 };
@@ -387,9 +402,13 @@ $('audio').onchange = () => {
 
 function withAlpha(color, alpha) {
   const value = color.trim();
-  if (!value.startsWith('#')) return value;
+  if (!value.startsWith("#")) return value;
   let hex = value.slice(1);
-  if (hex.length === 3) hex = hex.split('').map((char) => char + char).join('');
+  if (hex.length === 3)
+    hex = hex
+      .split("")
+      .map((char) => char + char)
+      .join("");
   const number = Number.parseInt(hex, 16);
   if (!Number.isFinite(number)) return value;
   return `rgba(${(number >> 16) & 255}, ${(number >> 8) & 255}, ${number & 255}, ${alpha})`;
@@ -399,13 +418,13 @@ function palette() {
   const style = getComputedStyle(document.documentElement);
   const read = (name) => style.getPropertyValue(name).trim();
   return {
-    text: read('--text'),
-    muted: read('--muted'),
-    border: read('--border'),
-    grid: read('--grid'),
-    accent: read('--accent'),
-    accent2: read('--accent-2'),
-    warn: read('--warn'),
+    text: read("--text"),
+    muted: read("--muted"),
+    border: read("--border"),
+    grid: read("--grid"),
+    accent: read("--accent"),
+    accent2: read("--accent-2"),
+    warn: read("--warn"),
   };
 }
 
@@ -431,7 +450,7 @@ function hideTooltip() {
 }
 
 function resizeAndDraw(animate) {
-  if ($('result').hidden) return;
+  if ($("result").hidden) return;
   const rect = canvas.getBoundingClientRect();
   if (rect.width < 2 || rect.height < 2) return;
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -501,15 +520,20 @@ function drawStage(progress) {
   }
   if (!ticks.length) ticks.push({ tick: 0, x: xOf(0), major: true });
 
-  const hoveringCurve = state.hoverX != null && state.hoverY != null && hasCurve
-    && state.hoverX >= PLOT.left && state.hoverX <= PLOT.left + plotWidth
-    && state.hoverY >= curveTop - 8 && state.hoverY <= bottom + 8;
+  const hoveringCurve =
+    state.hoverX != null &&
+    state.hoverY != null &&
+    hasCurve &&
+    state.hoverX >= PLOT.left &&
+    state.hoverX <= PLOT.left + plotWidth &&
+    state.hoverY >= curveTop - 8 &&
+    state.hoverY <= bottom + 8;
 
   // Offset grid for the match curve.
   ctx.save();
-  ctx.font = '10px ui-sans-serif, system-ui, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
+  ctx.font = "10px ui-sans-serif, system-ui, sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
   for (const { tick, x, major } of ticks) {
     ctx.strokeStyle = withAlpha(colors.grid, major ? 0.9 : 0.45);
     ctx.beginPath();
@@ -518,7 +542,7 @@ function drawStage(progress) {
     ctx.stroke();
     if (major) {
       ctx.fillStyle = withAlpha(colors.muted, 0.85);
-      const label = tick === 0 ? '0' : `${tick > 0 ? '+' : ''}${tick}`;
+      const label = tick === 0 ? "0" : `${tick > 0 ? "+" : ""}${tick}`;
       ctx.fillText(label, x, height - PLOT.bottom / 2 + 4);
     }
   }
@@ -538,9 +562,9 @@ function drawStage(progress) {
   ctx.setLineDash([3, 6]);
   ctx.strokeStyle = withAlpha(colors.warn, 0.28);
   ctx.fillStyle = withAlpha(colors.warn, 0.7);
-  ctx.font = '10px ui-sans-serif, system-ui, sans-serif';
-  ctx.textAlign = 'right';
-  ctx.textBaseline = 'alphabetic';
+  ctx.font = "10px ui-sans-serif, system-ui, sans-serif";
+  ctx.textAlign = "right";
+  ctx.textBaseline = "alphabetic";
   for (const score of SCORE_LINES) {
     if (score > scoreTop + 1e-9) continue;
     const y = yOf(score);
@@ -572,8 +596,8 @@ function drawStage(progress) {
     line.addColorStop(1, colors.accent2);
     ctx.save();
     ctx.lineWidth = 2.2;
-    ctx.lineJoin = 'round';
-    ctx.lineCap = 'round';
+    ctx.lineJoin = "round";
+    ctx.lineCap = "round";
     ctx.strokeStyle = line;
     ctx.shadowColor = withAlpha(colors.accent, 0.55);
     ctx.shadowBlur = 14;
@@ -601,8 +625,8 @@ function drawStage(progress) {
     ctx.restore();
 
     ctx.save();
-    ctx.font = '10px ui-sans-serif, system-ui, sans-serif';
-    const label = '当前';
+    ctx.font = "10px ui-sans-serif, system-ui, sans-serif";
+    const label = "当前";
     const textWidth = ctx.measureText(label).width;
     const chipWidth = textWidth + 10;
     const chipX = clamp(currentX - chipWidth / 2, PLOT.left, width - PLOT.right - chipWidth);
@@ -613,8 +637,8 @@ function drawStage(progress) {
     ctx.strokeStyle = withAlpha(colors.muted, 0.3);
     ctx.stroke();
     ctx.fillStyle = colors.muted;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
     ctx.fillText(label, chipX + chipWidth / 2, chipY + 7.5);
     ctx.restore();
   }
@@ -650,10 +674,14 @@ function drawStage(progress) {
     if (!hoveringCurve) {
       const label = `${formatSigned(result.offset * 1000)} ms`;
       ctx.save();
-      ctx.font = '650 11px ui-sans-serif, system-ui, sans-serif';
+      ctx.font = "650 11px ui-sans-serif, system-ui, sans-serif";
       const textWidth = ctx.measureText(label).width;
       const chipWidth = textWidth + 16;
-      const chipX = clamp(recommendationX - chipWidth / 2, PLOT.left, width - PLOT.right - chipWidth);
+      const chipX = clamp(
+        recommendationX - chipWidth / 2,
+        PLOT.left,
+        width - PLOT.right - chipWidth,
+      );
       const chipY = curveTop - 22;
       roundRect(ctx, chipX, chipY, chipWidth, 20, 10);
       ctx.fillStyle = withAlpha(colors.accent, 0.14);
@@ -662,8 +690,8 @@ function drawStage(progress) {
       ctx.lineWidth = 1;
       ctx.stroke();
       ctx.fillStyle = colors.accent;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
       ctx.fillText(label, chipX + chipWidth / 2, chipY + 10);
       ctx.restore();
     }
@@ -718,14 +746,14 @@ function scheduleHoverDraw() {
   });
 }
 
-canvas.addEventListener('pointermove', (event) => {
+canvas.addEventListener("pointermove", (event) => {
   if (!state.result) return;
   const rect = canvas.getBoundingClientRect();
   state.hoverX = event.clientX - rect.left;
   state.hoverY = event.clientY - rect.top;
   scheduleHoverDraw();
 });
-canvas.addEventListener('pointerleave', () => {
+canvas.addEventListener("pointerleave", () => {
   state.hoverX = null;
   state.hoverY = null;
   hideTooltip();
@@ -733,11 +761,11 @@ canvas.addEventListener('pointerleave', () => {
 });
 
 new ResizeObserver(() => {
-  if (!($('result').hidden)) resizeAndDraw(false);
+  if (!$("result").hidden) resizeAndDraw(false);
 }).observe(stage);
 
 // ─── init ───────────────────────────────────────────────────────────────────
 
-$('notes').value = JSON.stringify(createSample().notes, null, 2);
+$("notes").value = JSON.stringify(createSample().notes, null, 2);
 startTypewriter();
 updateControls();

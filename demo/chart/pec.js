@@ -10,12 +10,13 @@ export class BpmList {
       lastBpm = bpm;
       this.elements.push([beats, time, bpm]);
     }
-    if (!this.elements.length) throw new Error('PEC 缺少 BPM。');
+    if (!this.elements.length) throw new Error("PEC 缺少 BPM。");
   }
 
   timeBeats(beats) {
     const elements = this.elements;
-    if (beats < elements[0][0]) return elements[0][1] + (beats - elements[0][0]) * (60 / elements[0][2]);
+    if (beats < elements[0][0])
+      return elements[0][1] + (beats - elements[0][0]) * (60 / elements[0][2]);
     let i = 0;
     while (i + 1 < elements.length && elements[i + 1][0] <= beats) i++;
     const [startBeats, time, bpm] = elements[i];
@@ -23,7 +24,7 @@ export class BpmList {
   }
 }
 
-const KINDS = { 1: 'tap', 2: 'hold', 3: 'flick', 4: 'drag' };
+const KINDS = { 1: "tap", 2: "hold", 3: "flick", 4: "drag" };
 
 /**
  * Parse a PEC chart (Phira's native text format).
@@ -43,7 +44,7 @@ export function parsePec(text) {
       continue;
     }
     const cmd = parts[0];
-    if (cmd === 'bp') {
+    if (cmd === "bp") {
       const beats = Number(parts[1]);
       const bpm = Number(parts[2]);
       if (Number.isFinite(bpm) && bpm > 0 && Number.isFinite(beats)) bpmRanges.push([beats, bpm]);
@@ -55,7 +56,7 @@ export function parsePec(text) {
     const beats = Number(parts[2]);
     let at = 3;
     let endBeats = null;
-    if (kind === 'hold') {
+    if (kind === "hold") {
       endBeats = Number(parts[at]);
       at++;
     }
@@ -63,11 +64,11 @@ export function parsePec(text) {
     if (!Number.isFinite(beats) || beats < 0) continue;
     raw.push({ beats, kind, endBeats, fake });
   }
-  if (offset === null) throw new Error('PEC 文件为空。');
+  if (offset === null) throw new Error("PEC 文件为空。");
   const bpm = new BpmList(bpmRanges);
   const notes = raw.map(({ beats, kind, endBeats, fake }) => {
     const time = bpm.timeBeats(beats);
-    if (kind === 'hold' && endBeats !== null && Number.isFinite(endBeats)) {
+    if (kind === "hold" && endBeats !== null && Number.isFinite(endBeats)) {
       return { time, kind, endTime: bpm.timeBeats(endBeats), fake };
     }
     return { time, kind, fake };

@@ -6,11 +6,11 @@ function findEocd(view) {
   for (let i = view.byteLength - 22; i >= 0; i--) {
     if (view.getUint32(i, true) === EOCD_SIG) return i;
   }
-  throw new Error('不是有效的 zip 文件（找不到中央目录）。');
+  throw new Error("不是有效的 zip 文件（找不到中央目录）。");
 }
 
 async function inflateRaw(bytes) {
-  const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+  const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
   return new Uint8Array(await new Response(stream).arrayBuffer());
 }
 
@@ -29,7 +29,7 @@ export async function unzip(buffer) {
   const files = new Map();
   let p = dirOffset;
   for (let i = 0; i < count; i++) {
-    if (view.getUint32(p, true) !== CENTRAL_SIG) throw new Error('zip 中央目录损坏。');
+    if (view.getUint32(p, true) !== CENTRAL_SIG) throw new Error("zip 中央目录损坏。");
     const method = view.getUint16(p + 10, true);
     const compSize = view.getUint32(p + 20, true);
     const nameLen = view.getUint16(p + 28, true);
@@ -38,7 +38,7 @@ export async function unzip(buffer) {
     const localOffset = view.getUint32(p + 42, true);
     const name = decoder.decode(bytes.subarray(p + 46, p + 46 + nameLen));
     p += 46 + nameLen + extraLen + commentLen;
-    if (name.endsWith('/')) continue;
+    if (name.endsWith("/")) continue;
     if (view.getUint32(localOffset, true) !== LOCAL_SIG) throw new Error(`zip 成员损坏：${name}`);
     const localNameLen = view.getUint16(localOffset + 26, true);
     const localExtraLen = view.getUint16(localOffset + 28, true);

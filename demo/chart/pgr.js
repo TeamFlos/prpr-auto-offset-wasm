@@ -1,4 +1,4 @@
-const KINDS = { 1: 'tap', 2: 'drag', 3: 'hold', 4: 'flick' };
+const KINDS = { 1: "tap", 2: "drag", 3: "hold", 4: "flick" };
 
 /**
  * Parse a Phigros JSON chart.
@@ -8,7 +8,7 @@ const KINDS = { 1: 'tap', 2: 'drag', 3: 'hold', 4: 'flick' };
  */
 export function parsePgr(json) {
   const lines = json?.judgeLineList;
-  if (!Array.isArray(lines)) throw new Error('PGR 谱面缺少 judgeLineList。');
+  if (!Array.isArray(lines)) throw new Error("PGR 谱面缺少 judgeLineList。");
   const notes = [];
   for (const line of lines) {
     const bpm = Number(line.bpm);
@@ -19,7 +19,8 @@ export function parsePgr(json) {
         const kind = KINDS[note.type];
         const time = Number(note.time) * scale;
         if (!kind || !Number.isFinite(time) || time < 0) continue;
-        if (kind === 'hold') notes.push({ time, kind, endTime: time + Number(note.holdTime ?? 0) * scale });
+        if (kind === "hold")
+          notes.push({ time, kind, endTime: time + Number(note.holdTime ?? 0) * scale });
         else notes.push({ time, kind });
       }
     }

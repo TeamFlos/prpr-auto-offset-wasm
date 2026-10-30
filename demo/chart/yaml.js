@@ -3,10 +3,10 @@ function stripComment(value) {
   for (let i = 0; i < value.length; i++) {
     const ch = value[i];
     if (quote) {
-      if (ch === quote && value[i - 1] !== '\\') quote = null;
+      if (ch === quote && value[i - 1] !== "\\") quote = null;
     } else if (ch === '"' || ch === "'") {
       quote = ch;
-    } else if (ch === '#' && (i === 0 || /\s/.test(value[i - 1]))) {
+    } else if (ch === "#" && (i === 0 || /\s/.test(value[i - 1]))) {
       return value.slice(0, i).trimEnd();
     }
   }
@@ -15,17 +15,20 @@ function stripComment(value) {
 
 function unquote(value) {
   const text = value.trim();
-  if (text.length >= 2 && ((text[0] === '"' && text.at(-1) === '"') || (text[0] === "'" && text.at(-1) === "'"))) {
-    return text.slice(1, -1).replace(/\\(["'\\n])/g, (_, c) => (c === 'n' ? '\n' : c));
+  if (
+    text.length >= 2 &&
+    ((text[0] === '"' && text.at(-1) === '"') || (text[0] === "'" && text.at(-1) === "'"))
+  ) {
+    return text.slice(1, -1).replace(/\\(["'\\n])/g, (_, c) => (c === "n" ? "\n" : c));
   }
   return text;
 }
 
 function scalar(value) {
   const text = unquote(value);
-  if (text === '' || text === '~' || text === 'null') return null;
-  if (text === 'true') return true;
-  if (text === 'false') return false;
+  if (text === "" || text === "~" || text === "null") return null;
+  if (text === "true") return true;
+  if (text === "false") return false;
   if (/^[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?$/.test(text)) return Number(text);
   return text;
 }
@@ -41,7 +44,7 @@ export function parseInfoYaml(text) {
   let listKey = null;
   for (const rawLine of text.split(/\r?\n/)) {
     const line = rawLine.trimEnd();
-    if (!line.trim() || line.trimStart().startsWith('#')) continue;
+    if (!line.trim() || line.trimStart().startsWith("#")) continue;
     const item = line.match(/^\s*-\s*(.*)$/);
     if (item && listKey) {
       result[listKey].push(scalar(item[1]));
@@ -51,7 +54,7 @@ export function parseInfoYaml(text) {
     if (!entry) continue;
     const [, key, rest] = entry;
     const value = stripComment(rest);
-    if (value === '') {
+    if (value === "") {
       result[key] = [];
       listKey = key;
     } else {
