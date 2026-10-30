@@ -2,15 +2,14 @@
 <html lang="zh-CN">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>prpr · 自动偏移估计</title>
+<title>prpr-auto-offset DEMO</title>
 <link rel="stylesheet" href="./style.css">
 <main>
-  <header><span>TEAMFLOS / AUDIO TOOLS</span><a href="https://github.com/TeamFlos/prpr-auto-offset-wasm">GitHub ↗</a></header>
-  <h1>让音符，落在节拍上。</h1>
-  <p>prpr-auto-offset · 在浏览器中估计音频与谱面音符的时间偏移。文件仅在本地处理。</p>
   <section>
-    <h2>01 / 输入</h2>
-    <p>直接运行内置合成样例（音频比音符晚 123 ms），或选择音频并填写音符。JSON 时间单位为秒，支持 tap / hold / flick / drag；不直接解析谱面格式。</p>
+    <div class="section-heading"><button id="theme" class="secondary" type="button" aria-label="切换到暗色模式" title="切换到暗色模式" aria-pressed="false">
+      <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg>
+      <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13Z"/></svg>
+    </button></div>
     <label>音频文件<input id="audio" type="file" accept="audio/*"></label>
     <label>音符 JSON<textarea id="notes" rows="7" spellcheck="false"></textarea></label>
     <div class="fields">
@@ -22,14 +21,13 @@
     <p id="status" role="status" aria-live="polite">正在加载 WebAssembly…</p>
   </section>
   <section id="result" hidden>
-    <h2>02 / 对齐结果</h2>
+    <h2>对齐结果</h2>
     <div class="metrics"><div>谱面修正值<strong id="correction"></strong></div><div>绝对偏移<strong id="offset"></strong></div><div>相关系数<strong id="score"></strong></div></div>
     <p id="quality"></p>
     <p>谱面修正值 = 绝对偏移 − 作者偏移。reliable 仅表示相关系数超过 0.2，并非质量保证。</p>
     <canvas id="curve" width="960" height="300" role="img" aria-label="相关系数随绝对偏移变化的曲线"></canvas>
     <p>横轴：绝对偏移 (ms) · 纵轴：相关系数 · 虚线：0.35 / 0.6 参考线</p>
   </section>
-  <footer>GPL-3.0-only · Powered by Phira's prpr-auto-offset · WebAssembly</footer>
 </main>
 <script type="module" src="./app.js"></script>
 </html>

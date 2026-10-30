@@ -1,6 +1,21 @@
 import { createSample, parseNotes } from './input.js';
 
 const $ = (id) => document.getElementById(id);
+let lastResult;
+function setTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  const dark = theme === 'dark';
+  const label = dark ? '切换到浅色模式' : '切换到暗色模式';
+  $('theme').setAttribute('aria-label', label);
+  $('theme').title = label;
+  $('theme').setAttribute('aria-pressed', String(dark));
+  try { localStorage.setItem('demo-theme', theme); } catch {}
+  if (lastResult && !$('result').hidden) show(lastResult);
+}
+let initialTheme = 'light';
+try { if (localStorage.getItem('demo-theme') === 'dark') initialTheme = 'dark'; } catch {}
+setTheme(initialTheme);
+$('theme').onclick = () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
 let ready = false;
 let worker;
 function reset() {
@@ -64,6 +79,8 @@ $('run').onclick = async () => {
 };
 
 function show({ result: r, center }) {
+  lastResult = { result: r, center };
+  const colors = getComputedStyle(document.documentElement);
   const ms = (value) => `${value >= 0 ? '+' : ''}${(value * 1000).toFixed(1)} ms`;
   $('correction').textContent = ms(r.offset - center);
   $('offset').textContent = ms(r.offset);
@@ -80,13 +97,13 @@ function show({ result: r, center }) {
   const y = (v) => top + (1 - v) * height;
   ctx.font = '14px system-ui';
   for (const level of [0, 0.35, 0.6, 1]) {
-    ctx.strokeStyle = '#40516b'; ctx.setLineDash([5, 5]);
+    ctx.strokeStyle = colors.getPropertyValue('--grid').trim(); ctx.setLineDash([5, 5]);
     ctx.beginPath(); ctx.moveTo(left, y(level)); ctx.lineTo(left + width, y(level)); ctx.stroke();
-    ctx.fillStyle = '#aab7ca'; ctx.fillText(String(level), 8, y(level) + 5);
+    ctx.fillStyle = colors.getPropertyValue('--muted').trim(); ctx.fillText(String(level), 8, y(level) + 5);
   }
-  ctx.setLineDash([]); ctx.strokeStyle = '#95dfcb'; ctx.lineWidth = 2;
+  ctx.setLineDash([]); ctx.strokeStyle = colors.getPropertyValue('--text').trim(); ctx.lineWidth = 2;
   ctx.beginPath(); offsets.forEach((t, i) => i ? ctx.lineTo(x(t), y(values[i])) : ctx.moveTo(x(t), y(values[i]))); ctx.stroke();
-  ctx.fillStyle = '#aab7ca';
+  ctx.fillStyle = colors.getPropertyValue('--muted').trim();
   for (let i = 0; i <= 4; i++) {
     const t = min + (max - min) * i / 4;
     ctx.fillText((t * 1000).toFixed(0), x(t) - 12, canvas.height - 15);
